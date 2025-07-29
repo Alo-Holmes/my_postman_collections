@@ -1,0 +1,353 @@
+{
+	"info": {
+		"_postman_id": "54cc8126-4ba5-478f-8ca3-ef19b741e9e0",
+		"name": "My Demo API Test Project",
+		"description": "This is a demo project. It showcases my API testing skills.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "172262"
+	},
+	"item": [
+		{
+			"name": "GET all Posts",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Test: Status code is 200 OK\r",
+							"pm.test(\"Status code is 200 OK\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"// Test: Response is an array\r",
+							"pm.test(\"Response is an array\", function () {\r",
+							"    pm.expect(pm.response.json()).to.be.an('array');\r",
+							"});\r",
+							"\r",
+							"// Test: Array is not empty\r",
+							"pm.test(\"Array is not empty\", function () {\r",
+							"    pm.expect(pm.response.json().length).to.be.above(0);\r",
+							"});\r",
+							"\r",
+							"// Test: Each item in the array has 'id', 'userId', 'title', and 'body'\r",
+							"pm.test(\"Each post has required fields\", function () {\r",
+							"    const responseJson = pm.response.json();\r",
+							"    responseJson.forEach(post => {\r",
+							"        pm.expect(post).to.have.all.keys('userId', 'id', 'title', 'body');\r",
+							"    });\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://jsonplaceholder.typicode.com/posts",
+					"protocol": "https",
+					"host": [
+						"jsonplaceholder",
+						"typicode",
+						"com"
+					],
+					"path": [
+						"posts"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET Single Post by id",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Test: Status code is 200 OK\r",
+							"pm.test(\"Status code is 200 OK\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"// Test: Response is an object\r",
+							"pm.test(\"Response is an object\", function () {\r",
+							"    pm.expect(pm.response.json()).to.be.an('object');\r",
+							"});\r",
+							"\r",
+							"// Test: The returned post ID matches the requested ID\r",
+							"pm.test(\"Returned post ID matches requested ID\", function () {\r",
+							"    const responseJson = pm.response.json();\r",
+							"    const requestedId = pm.variables.get(\"postId\") || 1; // Fallback to 1 if variable not set\r",
+							"    pm.expect(responseJson.id).to.eql(parseInt(requestedId));\r",
+							"});\r",
+							"\r",
+							"// Test: Post has expected properties\r",
+							"pm.test(\"Post has expected properties\", function () {\r",
+							"    const responseJson = pm.response.json();\r",
+							"    pm.expect(responseJson).to.have.all.keys('userId', 'id', 'title', 'body');\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://jsonplaceholder.typicode.com/posts/{{postId}}",
+					"protocol": "https",
+					"host": [
+						"jsonplaceholder",
+						"typicode",
+						"com"
+					],
+					"path": [
+						"posts",
+						"{{postId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create New Post",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Test: Status code is 201 Created\r",
+							"pm.test(\"Status code is 201 Created\", function () {\r",
+							"    pm.response.to.have.status(201);\r",
+							"});\r",
+							"\r",
+							"// Test: Response contains a new ID\r",
+							"pm.test(\"Response contains a new ID\", function () {\r",
+							"    const responseJson = pm.response.json();\r",
+							"    pm.expect(responseJson).to.have.property('id');\r",
+							"    pm.expect(responseJson.id).to.be.a('number');\r",
+							"});\r",
+							"\r",
+							"// Test: The title in the response matches the request\r",
+							"pm.test(\"Title matches request\", function () {\r",
+							"    const requestBody = JSON.parse(pm.request.body.raw);\r",
+							"    const responseJson = pm.response.json();\r",
+							"    pm.expect(responseJson.title).to.eql(requestBody.title);\r",
+							"});\r",
+							"\r",
+							"// Set a collection variable for the newly created post ID\r",
+							"pm.collectionVariables.set(\"newPostId\", pm.response.json().id);\r",
+							"console.log(\"New Post ID set in collection variables:\", pm.collectionVariables.get(\"newPostId\"));\r",
+							"\r",
+							"    "
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"title\": \"My New Post Title\",\r\n    \"body\": \"This is the body of my brand new post.\",\r\n    \"userId\": 1\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://jsonplaceholder.typicode.com/posts",
+					"protocol": "https",
+					"host": [
+						"jsonplaceholder",
+						"typicode",
+						"com"
+					],
+					"path": [
+						"posts"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Existing Post",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Test: Status code is 200 OK\r",
+							"pm.test(\"Status code is 200 OK\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"// Test: The title in the response matches the updated title\r",
+							"pm.test(\"Updated title matches response\", function () {\r",
+							"    const requestBody = JSON.parse(pm.request.body.raw);\r",
+							"    const responseJson = pm.response.json();\r",
+							"    pm.expect(responseJson.title).to.eql(requestBody.title);\r",
+							"});\r",
+							"\r",
+							"// Test: The body in the response matches the updated body\r",
+							"pm.test(\"Updated body matches response\", function () {\r",
+							"    const requestBody = JSON.parse(pm.request.body.raw);\r",
+							"    const responseJson = pm.response.json();\r",
+							"    pm.expect(responseJson.body).to.eql(requestBody.body);\r",
+							"});\r",
+							"\r",
+							"// Test: The ID in the response matches the requested ID\r",
+							"pm.test(\"Response ID matches request ID\", function () {\r",
+							"    const requestBody = JSON.parse(pm.request.body.raw);\r",
+							"    const responseJson = pm.response.json();\r",
+							"    pm.expect(responseJson.id).to.eql(parseInt(requestBody.id));\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Log the fixed ID being used for this request\r",
+							"const fixedPostId = 1;\r",
+							"console.log(\"Pre-request: Using fixed postId for PUT operation:\", fixedPostId);\r",
+							"\r",
+							"// Parse the current request body\r",
+							"let requestBody = {};\r",
+							"try {\r",
+							"    requestBody = JSON.parse(pm.request.body.raw);\r",
+							"} catch (e) {\r",
+							"    console.error(\"Pre-request Error: Could not parse initial request body JSON.\", e);\r",
+							"}\r",
+							"\r",
+							"// Ensure the 'id' in the request body is the fixed numeric value\r",
+							"requestBody.id = fixedPostId;\r",
+							"\r",
+							"// Set the modified request body back to the request\r",
+							"pm.request.body.raw = JSON.stringify(requestBody);\r",
+							"console.log(\"Pre-request: Final request body to be sent:\", JSON.parse(pm.request.body.raw));\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"id\": 1,\r\n    \"title\": \"Updated Post Title by Me\",\r\n    \"body\": \"This post body has been updated.\",\r\n    \"userId\": 1\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://jsonplaceholder.typicode.com/posts/1",
+					"protocol": "https",
+					"host": [
+						"jsonplaceholder",
+						"typicode",
+						"com"
+					],
+					"path": [
+						"posts",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Existing Post",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Test: Status code is 200 OK\r",
+							"pm.test(\"Status code is 200 OK\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"// Test: Response body is empty or an empty object (JSONPlaceholder returns an empty object)\r",
+							"pm.test(\"Response body is empty object\", function () {\r",
+							"    pm.expect(pm.response.json()).to.be.an('object').and.be.empty;\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "https://jsonplaceholder.typicode.com/posts/1",
+					"protocol": "https",
+					"host": [
+						"jsonplaceholder",
+						"typicode",
+						"com"
+					],
+					"path": [
+						"posts",
+						"1"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "postId",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "newPostId",
+			"value": "101"
+		}
+	]
+}

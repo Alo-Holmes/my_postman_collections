@@ -1,0 +1,1416 @@
+{
+	"info": {
+		"_postman_id": "23c3b940-6d6e-4e0a-8c53-a697f69da6ca",
+		"name": "Swagger Petstore Simplified Tests",
+		"description": "A simplified Postman collection for the Swagger Petstore API, focusing on using fixed, existing IDs for GET/PUT/DELETE operations to ensure consistent passing, while still demonstrating dynamic data generation for POST requests.\n\n**Important Note on Petstore API:** The Swagger Petstore API (petstore.swagger.io) is a mock API and does NOT persist data. Therefore, dynamically created resources are not retrievable. This collection uses fixed, known-to-exist IDs (e.g., 1, 7, 8, 9) or usernames (e.g., 'user1') for GET/PUT/DELETE to ensure tests pass. Dynamic data generation is still included for POST requests to showcase capability, but these created resources are not subsequently referenced.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "172262"
+	},
+	"item": [
+		{
+			"name": "Pet Endpoints",
+			"item": [
+				{
+					"name": "Add a new pet to the store (POST /pet)",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// This script dynamically generates data for the new pet.",
+									"// Note: The Swagger Petstore API is a mock API and does NOT persist this data.",
+									"// Subsequent GET/PUT/DELETE operations on this pet ID will fail with a 404.",
+									"const petId = Math.floor(Math.random() * 1000000000000000);",
+									"const petName = `TestPet-${Date.now()}`;",
+									"const categoryName = `TestCategory-${Math.floor(Math.random() * 1000)}`;",
+									"const tagName = `TestTag-${Math.floor(Math.random() * 1000)}`;",
+									"",
+									"let requestBody = {",
+									"    \"id\": petId,",
+									"    \"category\": {",
+									"        \"id\": Math.floor(Math.random() * 1000),",
+									"        \"name\": categoryName",
+									"    },",
+									"    \"name\": petName,",
+									"    \"photoUrls\": [",
+									"        \"http://example.com/photo1.jpg\"",
+									"    ],",
+									"    \"tags\": [",
+									"        {",
+									"            \"id\": Math.floor(Math.random() * 1000),",
+									"            \"name\": tagName",
+									"        }",
+									"    ],",
+									"    \"status\": \"available\"",
+									"};",
+									"pm.request.body.raw = JSON.stringify(requestBody);",
+									"",
+									"console.log(`Pre-request: Attempting to add pet with ID: ${petId} and Name: ${petName}. (Note: This pet will not be persisted by the mock API.)`);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Verify the API's immediate response for a POST request.",
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has expected properties\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.be.an('object');",
+									"    pm.expect(responseJson).to.have.property('id').and.to.be.a('number');",
+									"    pm.expect(responseJson).to.have.property('name').and.to.be.a('string');",
+									"    pm.expect(responseJson).to.have.property('status').and.to.be.a('string');",
+									"});",
+									"",
+									"// Verify that the returned ID matches the one sent in the request.",
+									"const requestBody = JSON.parse(pm.request.body.raw);",
+									"pm.test(\"Returned pet ID matches sent ID\", function () {",
+									"    pm.expect(pm.response.json().id).to.eql(requestBody.id);",
+									"});",
+									"",
+									"pm.test(\"Returned pet name matches sent name\", function () {",
+									"    pm.expect(pm.response.json().name).to.eql(requestBody.name);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{baseUrl}}/pet",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"pet"
+							]
+						},
+						"description": "Add a new pet to the store"
+					},
+					"response": []
+				},
+				{
+					"name": "Update an existing pet (PUT /pet)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Verify the API's immediate response for a PUT request.",
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has expected properties\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.be.an('object');",
+									"    pm.expect(responseJson).to.have.property('id').and.to.be.a('number');",
+									"    pm.expect(responseJson).to.have.property('name').and.to.be.a('string');",
+									"    pm.expect(responseJson).to.have.property('status').and.to.be.a('string');",
+									"});",
+									"",
+									"const requestBody = JSON.parse(pm.request.body.raw);",
+									"pm.test(\"Returned pet ID matches sent ID\", function () {",
+									"    pm.expect(pm.response.json().id).to.eql(requestBody.id);",
+									"});",
+									"",
+									"pm.test(\"Returned pet name matches updated name\", function () {",
+									"    pm.expect(pm.response.json().name).to.eql(requestBody.name);",
+									"});",
+									"",
+									"pm.test(\"Returned pet status is 'sold'\", function () {",
+									"    pm.expect(pm.response.json().status).to.eql(\"sold\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "oauth2",
+							"oauth2": [
+								{
+									"key": "scope",
+									"value": "read:pets write:pets",
+									"type": "string"
+								},
+								{
+									"key": "authUrl",
+									"value": "https://petstore.swagger.io/oauth/authorize",
+									"type": "string"
+								},
+								{
+									"key": "grant_type",
+									"value": "implicit",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"id\": 7,\n    \"category\": {\n        \"id\": 1,\n        \"name\": \"Dogs\"\n    },\n    \"name\": \"UpdatedTestPet-Static\",\n    \"photoUrls\": [\n        \"http://example.com/updated_photo.jpg\"\n    ],\n    \"tags\": [\n        {\n            \"id\": 1,\n            \"name\": \"Friendly\"\n        }\n    ],\n    \"status\": \"sold\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/pet",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"pet"
+							]
+						},
+						"description": "Update an existing pet"
+					},
+					"response": []
+				},
+				{
+					"name": "Find pet by ID (GET /pet/{petId})",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has expected properties\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.be.an('object');",
+									"    pm.expect(responseJson).to.have.property('id').and.to.be.a('number');",
+									"    pm.expect(responseJson).to.have.property('name').and.to.be.a('string');",
+									"    pm.expect(responseJson).to.have.property('status').and.to.be.a('string');",
+									"});",
+									"",
+									"pm.test(\"Returned pet ID matches requested ID\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    // Since ID is hardcoded in URL, we expect it to be 7",
+									"    pm.expect(responseJson.id).to.eql(7);",
+									"});",
+									"",
+									"//pm.test(\"Returned pet name is 'doggie' (default for ID 7)\", function () {",
+									"//     const responseJson = pm.response.json();",
+									"//     pm.expect(responseJson.name).to.eql('doggie');",
+									"// });"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "apikey",
+							"apikey": [
+								{
+									"key": "key",
+									"value": "api_key",
+									"type": "string"
+								},
+								{
+									"key": "value",
+									"value": "{{apiKey}}",
+									"type": "string"
+								},
+								{
+									"key": "in",
+									"value": "header",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/pet/7",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"pet",
+								"7"
+							]
+						},
+						"description": "Returns a single pet"
+					},
+					"response": []
+				},
+				{
+					"name": "Find Pets by status (GET /pet/findByStatus)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response is an array\", function () {",
+									"    pm.expect(pm.response.json()).to.be.an('array');",
+									"});",
+									"",
+									"pm.test(\"Array is not empty\", function () {",
+									"    pm.expect(pm.response.json().length).to.be.above(0);",
+									"});",
+									"",
+									"pm.test(\"All pets have 'available' status\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    responseJson.forEach(pet => {",
+									"        pm.expect(pet.status).to.eql('available');",
+									"    });",
+									"});",
+									"",
+									"pm.test(\"Each pet has required fields\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    responseJson.forEach(pet => {",
+									"        pm.expect(pet).to.have.all.keys('id', 'category', 'name', 'photoUrls', 'tags', 'status');",
+									"    });",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "oauth2",
+							"oauth2": [
+								{
+									"key": "scope",
+									"value": "read:pets write:pets",
+									"type": "string"
+								},
+								{
+									"key": "authUrl",
+									"value": "https://petstore.swagger.io/oauth/authorize",
+									"type": "string"
+								},
+								{
+									"key": "grant_type",
+									"value": "implicit",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/pet/findByStatus?status=available",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"pet",
+								"findByStatus"
+							],
+							"query": [
+								{
+									"key": "status",
+									"value": "available",
+									"description": "(Required) Status values that need to be considered for filter"
+								}
+							]
+						},
+						"description": "Multiple status values can be provided with comma separated strings"
+					},
+					"response": []
+				},
+				{
+					"name": "Find Pets by tags (GET /pet/findByTags)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response is an array\", function () {",
+									"    pm.expect(pm.response.json()).to.be.an('array');",
+									"});",
+									"",
+									"pm.test(\"All pets in the response have at least one of the specified tags\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    const expectedTags = ['Rap Superstar', 'B rate Movie Actor'];",
+									"    responseJson.forEach(pet => {",
+									"        const petTags = pet.tags.map(tag => tag.name);",
+									"        const hasExpectedTag = petTags.some(tag => expectedTags.includes(tag));",
+									"        pm.expect(hasExpectedTag).to.be.true;",
+									"    });",
+									"});",
+									"",
+									"pm.test(\"Each pet has required fields\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    responseJson.forEach(pet => {",
+									"        pm.expect(pet).to.have.all.keys('id', 'category', 'name', 'photoUrls', 'tags', 'status');",
+									"    });",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "oauth2",
+							"oauth2": [
+								{
+									"key": "scope",
+									"value": "read:pets write:pets",
+									"type": "string"
+								},
+								{
+									"key": "authUrl",
+									"value": "https://petstore.swagger.io/oauth/authorize",
+									"type": "string"
+								},
+								{
+									"key": "grant_type",
+									"value": "implicit",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/pet/findByTags?tags=Rap Superstar&tags=B rate Movie Actor",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"pet",
+								"findByTags"
+							],
+							"query": [
+								{
+									"key": "tags",
+									"value": "Rap Superstar",
+									"description": "(Required) Tags to filter by"
+								},
+								{
+									"key": "tags",
+									"value": "B rate Movie Actor",
+									"description": "(Required) Tags to filter by"
+								}
+							]
+						},
+						"description": "Multiple tags can be provided with comma separated strings. Use tag1, tag2, tag3 for testing."
+					},
+					"response": []
+				},
+				{
+					"name": "Deletes a pet (DELETE /pet/{petId})",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Verify the API's immediate response for a DELETE request.",
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response indicates successful operation\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.be.an('object');",
+									"    pm.expect(responseJson).to.have.property('code').and.to.be.a('number');",
+									"    pm.expect(responseJson).to.have.property('type').and.to.be.a('string');",
+									"    pm.expect(responseJson).to.have.property('message').and.to.be.a('string');",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "oauth2",
+							"oauth2": [
+								{
+									"key": "scope",
+									"value": "read:pets write:pets",
+									"type": "string"
+								},
+								{
+									"key": "authUrl",
+									"value": "https://petstore.swagger.io/oauth/authorize",
+									"type": "string"
+								},
+								{
+									"key": "grant_type",
+									"value": "implicit",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "api_key",
+								"value": "{{apiKey}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/pet/9",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"pet",
+								"9"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Uploads an image (POST /pet/{petId}/uploadImage)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Verify the API's immediate response for an image upload.",
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has expected properties\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.be.an('object');",
+									"    pm.expect(responseJson).to.have.property('code').and.to.be.a('number');",
+									"    pm.expect(responseJson).to.have.property('type').and.to.be.a('string');",
+									"    pm.expect(responseJson).to.have.property('message').and.to.be.a('string');",
+									"});",
+									"",
+									"pm.test(\"Message indicates successful upload\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.message).to.include('File uploaded to');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "oauth2",
+							"oauth2": [
+								{
+									"key": "scope",
+									"value": "read:pets write:pets",
+									"type": "string"
+								},
+								{
+									"key": "authUrl",
+									"value": "https://petstore.swagger.io/oauth/authorize",
+									"type": "string"
+								},
+								{
+									"key": "grant_type",
+									"value": "implicit",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "multipart/form-data"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "additionalMetadata",
+									"value": "ImageUpload-Static",
+									"type": "text"
+								},
+								{
+									"key": "file",
+									"value": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=",
+									"contentType": "image/png",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/pet/9/uploadImage",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"pet",
+								"9",
+								"uploadImage"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Store Endpoints",
+			"item": [
+				{
+					"name": "Place an order for a pet (POST /store/order)",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// This script dynamically generates data for a new order.",
+									"// Note: The Swagger Petstore API is a mock API and does NOT persist this data.",
+									"// Subsequent GET/DELETE operations on this order ID will fail with a 404.",
+									"const orderId = Math.floor(Math.random() * 10) + 1; // Petstore API expects IDs 1-10 for valid order responses",
+									"const petId = Math.floor(Math.random() * 100) + 1; // Use an existing pet ID for the order",
+									"const quantity = Math.floor(Math.random() * 5) + 1;",
+									"const shipDate = new Date().toISOString();",
+									"",
+									"let requestBody = {",
+									"    \"id\": orderId,",
+									"    \"petId\": petId,",
+									"    \"quantity\": quantity,",
+									"    \"shipDate\": shipDate,",
+									"    \"status\": \"placed\",",
+									"    \"complete\": false",
+									"};",
+									"pm.request.body.raw = JSON.stringify(requestBody);",
+									"",
+									"console.log(`Pre-request: Attempting to place order with ID: ${orderId} for pet ID: ${petId}. (Note: This order will not be persisted by the mock API.)`);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Verify the API's immediate response for a POST request.",
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has expected properties\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.be.an('object');",
+									"    pm.expect(responseJson).to.have.property('id').and.to.be.a('number');",
+									"    pm.expect(responseJson).to.have.property('petId').and.to.be.a('number');",
+									"    pm.expect(responseJson).to.have.property('quantity').and.to.be.a('number');",
+									"    pm.expect(responseJson).to.have.property('status').and.to.be.a('string');",
+									"});",
+									"",
+									"const requestBody = JSON.parse(pm.request.body.raw);",
+									"pm.test(\"Returned order ID matches sent ID\", function () {",
+									"    pm.expect(pm.response.json().id).to.eql(requestBody.id);",
+									"});",
+									"",
+									"pm.test(\"Order status is 'placed'\", function () {",
+									"    pm.expect(pm.response.json().status).to.eql('placed');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{baseUrl}}/store/order",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"store",
+								"order"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Find purchase order by ID (GET /store/order/{orderId})",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has expected properties\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.be.an('object');",
+									"    pm.expect(responseJson).to.have.property('id').and.to.be.a('number');",
+									"    pm.expect(responseJson).to.have.property('petId').and.to.be.a('number');",
+									"    pm.expect(responseJson).to.have.property('quantity').and.to.be.a('number');",
+									"    pm.expect(responseJson).to.have.property('shipDate').and.to.be.a('string');",
+									"    pm.expect(responseJson).to.have.property('status').and.to.be.a('string');",
+									"    pm.expect(responseJson).to.have.property('complete').and.to.be.a('boolean');",
+									"});",
+									"",
+									"pm.test(\"Returned order ID matches requested ID\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    // Since ID is hardcoded in URL, we expect it to be 1",
+									"    pm.expect(responseJson.id).to.eql(9);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/store/order/9",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"store",
+								"order",
+								"9"
+							]
+						},
+						"description": "For valid response try integer IDs with value >= 1 and <= 10. Other values will generated exceptions"
+					},
+					"response": []
+				},
+				{
+					"name": "Returns pet inventories by status (GET /store/inventory)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response is an object (map of string to integer)\", function () {",
+									"    pm.expect(pm.response.json()).to.be.an('object');",
+									"});",
+									"",
+									"pm.test(\"All values in the inventory map are numbers\", function () {",
+									"    const inventory = pm.response.json();",
+									"    for (const key in inventory) {",
+									"        if (inventory.hasOwnProperty(key)) {",
+									"            pm.expect(inventory[key]).to.be.a('number');",
+									"        }",
+									"    }",
+									"});",
+									"",
+									"pm.test(\"Inventory is not empty\", function () {",
+									"    const inventory = pm.response.json();",
+									"    pm.expect(Object.keys(inventory).length).to.be.above(0);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "apikey",
+							"apikey": [
+								{
+									"key": "key",
+									"value": "api_key",
+									"type": "string"
+								},
+								{
+									"key": "value",
+									"value": "{{apiKey}}",
+									"type": "string"
+								},
+								{
+									"key": "in",
+									"value": "header",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/store/inventory",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"store",
+								"inventory"
+							]
+						},
+						"description": "Returns a map of status codes to quantities"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete purchase order by ID (DELETE /store/order/{orderId})",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response indicates successful operation\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.be.an('object');",
+									"    pm.expect(responseJson).to.have.property('code').and.to.be.a('number');",
+									"    pm.expect(responseJson).to.have.property('type').and.to.be.a('string');",
+									"    pm.expect(responseJson).to.have.property('message').and.to.be.a('string');",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/store/order/9",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"store",
+								"order",
+								"9"
+							]
+						},
+						"description": "For valid response try integer IDs with positive integer value. Negative or non-integer values will generate API errors"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "User Endpoints",
+			"item": [
+				{
+					"name": "Create user (POST /user)",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// This script dynamically generates data for a new user.",
+									"// Note: The Swagger Petstore API is a mock API and does NOT persist this data.",
+									"// Subsequent GET/PUT/DELETE operations on this username will fail with a 404.",
+									"const userId = Math.floor(Math.random() * 1000000);",
+									"const username = `testuser_${Date.now()}`;",
+									"const firstName = `FirstName_${Math.floor(Math.random() * 1000)}`;",
+									"const lastName = `LastName_${Math.floor(Math.random() * 1000)}`;",
+									"const email = `${username}@example.com`;",
+									"const password = `password${Math.floor(Math.random() * 10000)}`;",
+									"const phone = `+1-${Math.floor(Math.random() * 1000)}-${Math.floor(Math.random() * 1000)}-${Math.floor(Math.random() * 10000)}`;",
+									"const userStatus = Math.floor(Math.random() * 3) + 1;",
+									"",
+									"let requestBody = {",
+									"    \"id\": userId,",
+									"    \"username\": username,",
+									"    \"firstName\": firstName,",
+									"    \"lastName\": lastName,",
+									"    \"email\": email,",
+									"    \"password\": password,",
+									"    \"phone\": phone,",
+									"    \"userStatus\": userStatus",
+									"};",
+									"pm.request.body.raw = JSON.stringify(requestBody);",
+									"",
+									"console.log(`Pre-request: Attempting to create user: ${username}. (Note: This user will not be persisted by the mock API.)`);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Verify the API's immediate response for a POST request.",
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response indicates successful operation\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.be.an('object');",
+									"    pm.expect(responseJson).to.have.property('code').and.to.be.a('number');",
+									"    pm.expect(responseJson).to.have.property('type').and.to.be.a('string');",
+									"    pm.expect(responseJson).to.have.property('message').and.to.be.a('string');",
+									"});",
+									"",
+									"const requestBody = JSON.parse(pm.request.body.raw);",
+									"pm.test(\"Message contains user ID\", function () {",
+									"    pm.expect(pm.response.json().message).to.include(requestBody.id);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{baseUrl}}/user",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"user"
+							]
+						},
+						"description": "This can only be done by the logged in user."
+					},
+					"response": []
+				},
+				{
+					"name": "Logs user into the system (GET /user/login)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response is a string (session token)\", function () {",
+									"    pm.expect(pm.response.text()).to.be.a('string');",
+									"    pm.expect(pm.response.text().length).to.be.above(0);",
+									"});",
+									"",
+									"pm.test(\"Message indicates successful login\", function () {",
+									"    pm.expect(pm.response.text()).to.include('logged in user session');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/user/login?username=user1&password=password123",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"user",
+								"login"
+							],
+							"query": [
+								{
+									"key": "username",
+									"value": "user1",
+									"description": "(Required) The user name for login"
+								},
+								{
+									"key": "password",
+									"value": "password123",
+									"description": "(Required) The password for login in clear text"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get user by user name (GET /user/{username})",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has expected user properties\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.be.an('object');",
+									"    pm.expect(responseJson).to.have.property('id').and.to.be.a('number');",
+									"    pm.expect(responseJson).to.have.property('username').and.to.be.a('string');",
+									"    pm.expect(responseJson).to.have.property('email').and.to.be.a('string');",
+									"});",
+									"",
+									"pm.test(\"Returned username matches requested username\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    // Since username is hardcoded in URL, we expect it to be 'user1'",
+									"    pm.expect(responseJson.username).to.eql('user1');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/user/user1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"user",
+								"user1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Updated user (PUT /user/{username})",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Verify the API's immediate response for a PUT request.",
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response indicates successful operation\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.be.an('object');",
+									"    pm.expect(responseJson).to.have.property('code').and.to.be.a('number');",
+									"    pm.expect(responseJson).to.have.property('type').and.to.be.a('string');",
+									"    pm.expect(responseJson).to.have.property('message').and.to.be.a('string');",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"id\": 0,\n    \"username\": \"user1\",\n    \"firstName\": \"StaticUpdatedFirstName\",\n    \"lastName\": \"StaticUpdatedLastName\",\n    \"email\": \"static_updated_user1@example.com\",\n    \"password\": \"newpassword123\",\n    \"phone\": \"+1-999-888-7777\",\n    \"userStatus\": 2\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/user/user1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"user",
+								"user1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete user (DELETE /user/{username})",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response indicates successful operation\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.be.an('object');",
+									"    pm.expect(responseJson).to.have.property('code').and.to.be.a('number');",
+									"    pm.expect(responseJson).to.have.property('type').and.to.be.a('string');",
+									"    pm.expect(responseJson).to.have.property('message').and.to.be.a('string');",
+									"});",
+									"",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/user/user1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"user",
+								"user1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Logs out current logged in user session (GET /user/logout)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response structure validation\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.be.an('object');",
+									"    pm.expect(responseJson).to.have.property('code').and.to.be.a('number');",
+									"    pm.expect(responseJson).to.have.property('type').and.to.be.a('string');",
+									"    pm.expect(responseJson).to.have.property('message').and.to.be.a('string');",
+									"});",
+									"",
+									"pm.test(\"Message indicates successful logout\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.message).to.include('ok');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/user/logout",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"user",
+								"logout"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Creates list of users with given input array (POST /user/createWithList)",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// This script dynamically generates data for a list of new users.",
+									"// Note: The Swagger Petstore API is a mock API and does NOT persist this data.",
+									"const users = [];",
+									"for (let i = 0; i < 2; i++) {",
+									"    const userId = Math.floor(Math.random() * 1000000);",
+									"    const username = `listuser_${Date.now()}_${i}`;",
+									"    const firstName = `ListFirstName_${i}`;",
+									"    const lastName = `ListLastName_${i}`;",
+									"    const email = `${username}@example.com`;",
+									"    const password = `listpass${i}`;",
+									"    const phone = `+1-555-${Math.floor(Math.random() * 1000)}-${Math.floor(Math.random() * 1000)}-${Math.floor(Math.random() * 10000)}`;",
+									"    const userStatus = i + 1;",
+									"    users.push({",
+									"        \"id\": userId,",
+									"        \"username\": username,",
+									"        \"firstName\": firstName,",
+									"        \"lastName\": lastName,",
+									"        \"email\": email,",
+									"        \"password\": password,",
+									"        \"phone\": phone,",
+									"        \"userStatus\": userStatus",
+									"    });",
+									"}",
+									"",
+									"pm.request.body.raw = JSON.stringify(users);",
+									"console.log(`Pre-request: Attempting to create list of users: ${users.map(u => u.username).join(', ')}. (Note: These users will not be persisted by the mock API.)`);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Verify the API's immediate response for a POST request.",
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response indicates successful operation\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.be.an('object');",
+									"    pm.expect(responseJson).to.have.property('code').and.to.be.a('number');",
+									"    pm.expect(responseJson).to.have.property('type').and.to.be.a('string');",
+									"    pm.expect(responseJson).to.have.property('message').and.to.be.a('string');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{baseUrl}}/user/createWithList",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"user",
+								"createWithList"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Collection-level pre-request script (runs before every request in the collection)",
+					"// Can be used for global setup, e.g., generating a timestamp for all requests",
+					"// console.log(\"Collection Pre-request: Current timestamp: \" + Date.now());"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Collection-level test script (runs after every request in the collection)",
+					"// Can be used for global assertions or cleanup",
+					"// console.log(\"Collection Test: Request completed.\");"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "https://petstore.swagger.io/v2",
+			"type": "string"
+		},
+		{
+			"key": "apiKey",
+			"value": "special-key",
+			"type": "string"
+		},
+		{
+			"key": "newPetId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "newPetName",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "newPetCategoryName",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "updatedPetName",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "fixedPetIdForUpdate",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "newOrderId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "newUsername",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "newUserPassword",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "updatedUserEmail",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "updatedUserFirstName",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "updatedUserStatus",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
